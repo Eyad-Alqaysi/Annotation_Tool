@@ -74,9 +74,9 @@ class VideoPlayerApp:
         self.update()
         
 
-    def load_video(self):
+    def load_video(self, event=None):
         """Load a video file and initialize all relevant parameters."""
-        if self.points:
+        if self.points and event is None:
             if tk.messagebox.askyesno("Changes", "Do you want to save the points before load?"):
                 self.save_points_to_json()
         
@@ -106,10 +106,18 @@ class VideoPlayerApp:
             points_data = data[video_key]['points']
             # Clear the current points
             self.points = []
+            # Reset the counters
+            self.entering_counter, self.leaving_counter = 0, 0
             # Iterate through each point and create PointData object
             for p in points_data:
                 point_data = PointData(p["point_id"], p["frame"], p["x"], p["y"], p["state"])
                 self.points.append(point_data)
+                if point_data.state == "Entering":
+                    self.entering_counter += 1
+                elif point_data.state == "Leaving":
+                    self.leaving_counter += 1
+        # After reading all points, update the points text
+        self.update_points_text()
             
 
     def capture_all_frames(self):
@@ -154,6 +162,47 @@ class VideoPlayerApp:
         else:
             self.is_playing = False
             self.play_button.config(text="Play")
+
+    def reset_json_file(self):
+        """Reset the JSON file for the current video."""
+        if tk.messagebox.askyesno("Changes", "Do you want to reset the points?"):
+            json_files_dir = '../json_files'
+            file_path = os.path.join(json_files_dir, 'virtual_gate.json')
+            
+            if os.path.exists(file_path):
+                with open(file_path, "r") as json_file:
+                    data = json.load(json_file)
+                    
+                video_key = self.video_path.split('/')[-1]
+                
+                # Check if the video key exists in the JSON data
+                if video_key in data:
+                    # Reset the data for this video key
+                    data[video_key] = {
+                        "points": []
+                    }
+                    
+                # Save the updated data back to the JSON file
+                with open(file_path, "w") as json_file:
+                    json.dump(data, json_file, indent=4)
+            
+            counters_path = os.path.splitext(file_path)[0] + "_counters.json"
+            if os.path.exists(counters_path):
+                with open(counters_path, "r") as counters_file:
+                    counter_data = json.load(counters_file)
+                
+                # Reset the counters for this video key
+                if video_key in counter_data:
+                    counter_data[video_key] = {
+                        "entering_counter": 0,
+                        "leaving_counter": 0
+                    }
+                    
+                # Save the updated counters back to the counters JSON file
+                with open(counters_path, "w") as counters_file:
+                    json.dump(counter_data, counters_file, indent=4)
+            self.load_video(1)
+
 
     def show_frame(self):
         """Show the current frame on the canvas."""
@@ -269,15 +318,16 @@ class VideoPlayerApp:
         self.entering_text.delete(1.0, tk.END)
         for point_data in reversed(self.points):
             if point_data.state == "Entering":
-                if point_data.point_id in self.point_photos:
+                if point_data.photo and isinstance(point_data.photo, ImageTk.PhotoImage):
                     self.entering_text.image_create(tk.END, image=point_data.photo)
+
 
     def update_leaving_text(self):
         """Update the leaving text box with the leaving points."""
         self.leaving_text.delete(1.0, tk.END)
         for point_data in reversed(self.points):
             if point_data.state == "Leaving":
-                if point_data.point_id in self.point_photos:
+                if point_data.photo and isinstance(point_data.photo, ImageTk.PhotoImage):
                     self.leaving_text.image_create(tk.END, image=point_data.photo)
 
     def update_points_text(self):
