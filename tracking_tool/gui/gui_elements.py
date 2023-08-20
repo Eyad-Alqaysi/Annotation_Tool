@@ -60,8 +60,8 @@ def create_gui_elements(app):
         app.zoom_spinbox.grid(row=2, column=8, sticky=tk.W)
         app.zoom = app.zoom_spinbox.get()
 
-        app.reset_button = tk.Button(app.root, text="Reset", command=app.reset_json_file)
-        app.reset_button.grid(row=3, column=8, sticky=tk.W)
+        app.reset_button = tk.Button(app.root, text="Reset Json", command=app.reset_json_file)
+        app.reset_button.grid(row=3, column=8, sticky=tk.W, columnspan=2)
 
         # Timer label for displaying current playback time
         app.timer_label = tk.Label(app.root, text="00:00", font=("Helvetica", 16))
