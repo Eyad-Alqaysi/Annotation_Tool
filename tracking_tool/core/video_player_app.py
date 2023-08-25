@@ -178,9 +178,7 @@ class VideoPlayerApp:
                 # Check if the video key exists in the JSON data
                 if video_key in data:
                     # Reset the data for this video key
-                    data[video_key] = {
-                        "points": []
-                    }
+                    del data[video_key]
                     
                 # Save the updated data back to the JSON file
                 with open(file_path, "w") as json_file:
@@ -193,10 +191,7 @@ class VideoPlayerApp:
                 
                 # Reset the counters for this video key
                 if video_key in counter_data:
-                    counter_data[video_key] = {
-                        "entering_counter": 0,
-                        "leaving_counter": 0
-                    }
+                    del counter_data[video_key]
                     
                 # Save the updated counters back to the counters JSON file
                 with open(counters_path, "w") as counters_file:
