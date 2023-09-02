@@ -39,6 +39,7 @@ The Annotation_Tool is designed to assist in preparing test data for YOLO (You O
 
 1. Run the tool:
     ```bash
+    cd tracking_tool
     python main.py
     ```
 2. Use the "Upload" button to load a video.
